@@ -1,0 +1,9 @@
+gradio==3.45.0
+numpy==1.24.3
+pandas==2.0.3
+plotly==5.15.0
+pykrx==1.0.40
+bcrypt==4.0.1
+yfinance==0.2.31
+requests==2.31.0
+schedule==1.2.0

@@ -1,0 +1,98 @@
+# 자산관리 프로그램
+
+주식 포트폴리오와 적금을 관리하고 시각화하는 웹 기반 애플리케이션입니다.
+
+## 특징
+
+- 로그인 및 계정 관리
+- 주식 포트폴리오 관리 (매수/매도, 실시간 가격 업데이트)
+- 적금 관리 (입금/출금 기록, 만기 예상액 계산)
+- 데이터 시각화 (수익률 추이, 자산 배분, 포트폴리오 분석)
+- 로그 기록 및 보안 기능
+
+## 설치 방법
+
+### 환경 요구사항
+
+- Python 3.8 이상
+- SQLite3
+- Pip 패키지 관리자
+
+### 설치
+
+1. 저장소 클론 또는 다운로드:
+   ```
+   git clone https://github.com/yourusername/portfolio-manager.git
+   cd portfolio-manager
+   ```
+
+2. 필요한 패키지 설치:
+   ```
+   pip install -r requirements.txt
+   ```
+
+## 사용 방법
+
+1. 애플리케이션 실행:
+   ```
+   python app.py
+   ```
+
+2. 웹 브라우저에서 애플리케이션 접속:
+   ```
+   http://localhost:7860
+   ```
+
+3. 기본 관리자 계정으로 로그인:
+   - 사용자명: admin
+   - 비밀번호: admin123
+
+## 프로젝트 구조
+
+```
+project/
+├── app.py                  # 메인 어플리케이션 파일
+├── config/                 # 구성 파일
+│   └── settings.py         # 설정값 정의
+├── models/                 # 데이터베이스 모델
+│   ├── database.py         # 데이터베이스 초기화 및 연결 모듈
+│   ├── portfolio.py        # 포트폴리오 관련 모델
+│   ├── savings.py          # 적금 관련 모델
+│   └── user.py             # 사용자 및 인증 관련 모델
+├── services/               # 비즈니스 로직 서비스
+│   ├── auth_service.py     # 인증 관련 서비스
+│   ├── market_service.py   # 시장 데이터 서비스 (주가, 환율 등)
+│   ├── portfolio_service.py # 포트폴리오 관련 서비스
+│   └── savings_service.py  # 적금 관련 서비스
+├── ui/                     # UI 관련 코드
+│   ├── auth_ui.py          # 인증 UI 컴포넌트
+│   ├── portfolio_ui.py     # 포트폴리오 UI 컴포넌트
+│   ├── savings_ui.py       # 적금 UI 컴포넌트
+│   └── visualization.py    # 시각화 함수
+├── utils/                  # 유틸리티 기능
+│   ├── logging.py          # 로깅 설정
+│   └── helpers.py          # 기타 헬퍼 함수
+├── logs/                   # 로그 파일 디렉토리
+├── data/                   # 데이터 파일 디렉토리
+│   ├── portfolio.db        # 포트폴리오 데이터베이스
+│   └── users.db            # 사용자 데이터베이스
+└── requirements.txt        # 필요한 패키지 목록
+```
+
+## 필요한 패키지
+
+```
+gradio==3.45.0
+numpy==1.24.3
+pandas==2.0.3
+plotly==5.15.0
+pykrx==1.0.40
+bcrypt==4.0.1
+yfinance==0.2.31
+requests==2.31.0
+schedule==1.2.0
+```
+
+## 라이센스
+
+이 프로젝트는 MIT 라이센스를 따릅니다. 자세한 내용은 LICENSE 파일을 참조하세요.

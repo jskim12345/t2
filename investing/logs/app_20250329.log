@@ -1,0 +1,110 @@
+2025-03-29 22:53:07,289 - models.database - INFO - 기본 관리자 계정 생성 완료
+2025-03-29 22:53:07,296 - models.database - INFO - 데이터베이스 초기화 완료
+2025-03-29 22:53:49,025 - models.database - INFO - 데이터베이스 초기화 완료
+2025-03-29 22:54:28,279 - models.database - INFO - 데이터베이스 초기화 완료
+2025-03-29 22:54:28,280 - services.market_service - INFO - 가격 업데이트 스케줄러 시작됨
+2025-03-29 22:54:28,280 - services.market_service - INFO - 자동 가격 업데이트 작업 시작
+2025-03-29 22:54:28,280 - services.portfolio_service - ERROR - 가격 업데이트 오류: no such column: user_id
+2025-03-29 22:54:28,280 - models.savings - INFO - 적금 계산 업데이트 완료: 0개 업데이트됨
+2025-03-29 22:54:28,280 - services.market_service - INFO - 자동 가격 업데이트 작업 완료
+2025-03-29 22:54:28,861 - httpx - INFO - HTTP Request: GET http://127.0.0.1:7860/gradio_api/startup-events "HTTP/1.1 200 OK"
+2025-03-29 22:54:28,970 - httpx - INFO - HTTP Request: HEAD http://127.0.0.1:7860/ "HTTP/1.1 200 OK"
+2025-03-29 22:54:29,096 - httpx - INFO - HTTP Request: GET https://api.gradio.app/pkg-version "HTTP/1.1 200 OK"
+2025-03-29 22:54:46,901 - services.auth_service - WARNING - 로그인 실패 (사용자 없음): js
+2025-03-29 22:54:46,902 - root - WARNING - 로그인 실패: js
+2025-03-29 22:54:57,992 - services.auth_service - WARNING - 로그인 실패 (사용자 없음): js
+2025-03-29 22:54:57,992 - root - WARNING - 로그인 실패: js
+2025-03-29 22:55:02,896 - services.auth_service - WARNING - 로그인 실패 (사용자 없음): js
+2025-03-29 22:55:02,896 - root - WARNING - 로그인 실패: js
+2025-03-29 22:56:21,967 - models.database - INFO - 데이터베이스 초기화 완료
+2025-03-29 22:56:21,968 - services.market_service - INFO - 가격 업데이트 스케줄러 시작됨
+2025-03-29 22:56:21,969 - services.market_service - INFO - 자동 가격 업데이트 작업 시작
+2025-03-29 22:56:21,969 - services.portfolio_service - ERROR - 가격 업데이트 오류: no such column: user_id
+2025-03-29 22:56:21,970 - models.savings - INFO - 적금 계산 업데이트 완료: 0개 업데이트됨
+2025-03-29 22:56:21,970 - services.market_service - INFO - 자동 가격 업데이트 작업 완료
+2025-03-29 22:56:22,472 - httpx - INFO - HTTP Request: GET http://127.0.0.1:7860/gradio_api/startup-events "HTTP/1.1 200 OK"
+2025-03-29 22:56:22,500 - httpx - INFO - HTTP Request: HEAD http://127.0.0.1:7860/ "HTTP/1.1 200 OK"
+2025-03-29 22:56:22,758 - httpx - INFO - HTTP Request: GET https://api.gradio.app/pkg-version "HTTP/1.1 200 OK"
+2025-03-29 22:56:37,202 - services.auth_service - WARNING - 로그인 실패 (사용자 없음): js
+2025-03-29 22:56:37,203 - root - WARNING - 로그인 실패: js
+2025-03-29 22:59:03,548 - models.database - INFO - 기본 관리자 계정 생성 완료
+2025-03-29 22:59:03,609 - models.database - INFO - 데이터베이스 초기화 완료
+2025-03-29 22:59:03,611 - services.market_service - INFO - 가격 업데이트 스케줄러 시작됨
+2025-03-29 22:59:03,611 - services.market_service - INFO - 자동 가격 업데이트 작업 시작
+2025-03-29 22:59:03,613 - services.portfolio_service - INFO - 가격 업데이트 완료: 0개 종목
+2025-03-29 22:59:03,613 - models.savings - INFO - 적금 계산 업데이트 완료: 0개 업데이트됨
+2025-03-29 22:59:03,613 - services.market_service - INFO - 자동 가격 업데이트 작업 완료
+2025-03-29 22:59:04,148 - httpx - INFO - HTTP Request: GET http://127.0.0.1:7860/gradio_api/startup-events "HTTP/1.1 200 OK"
+2025-03-29 22:59:04,170 - httpx - INFO - HTTP Request: HEAD http://127.0.0.1:7860/ "HTTP/1.1 200 OK"
+2025-03-29 22:59:04,372 - httpx - INFO - HTTP Request: GET https://api.gradio.app/pkg-version "HTTP/1.1 200 OK"
+2025-03-29 22:59:23,340 - models.user - INFO - 새 사용자 생성: js (ID: 2)
+2025-03-29 22:59:23,341 - services.auth_service - INFO - 사용자 등록 성공: js
+2025-03-29 22:59:23,341 - root - INFO - 회원가입 성공: js
+2025-03-29 22:59:26,928 - models.user - INFO - 세션 생성: bffb2553-1a88-480b-b3c7-1581e61b168b (사용자 ID: 2)
+2025-03-29 22:59:26,936 - services.auth_service - INFO - 로그인 성공: js (IP: unknown)
+2025-03-29 22:59:26,941 - root - INFO - 로그인 성공: js
+2025-03-29 22:59:32,854 - services.portfolio_service - INFO - 가격 업데이트 완료: 0개 종목
+2025-03-29 23:03:39,120 - models.database - INFO - 데이터베이스 초기화 완료
+2025-03-29 23:03:39,121 - services.market_service - INFO - 가격 업데이트 스케줄러 시작됨
+2025-03-29 23:03:39,121 - services.market_service - INFO - 자동 가격 업데이트 작업 시작
+2025-03-29 23:03:39,121 - services.portfolio_service - INFO - 가격 업데이트 완료: 0개 종목
+2025-03-29 23:03:39,122 - models.savings - INFO - 적금 계산 업데이트 완료: 0개 업데이트됨
+2025-03-29 23:03:39,122 - services.market_service - INFO - 자동 가격 업데이트 작업 완료
+2025-03-29 23:03:39,647 - httpx - INFO - HTTP Request: GET http://127.0.0.1:7860/gradio_api/startup-events "HTTP/1.1 200 OK"
+2025-03-29 23:03:39,671 - httpx - INFO - HTTP Request: HEAD http://127.0.0.1:7860/ "HTTP/1.1 200 OK"
+2025-03-29 23:03:39,950 - httpx - INFO - HTTP Request: GET https://api.gradio.app/pkg-version "HTTP/1.1 200 OK"
+2025-03-29 23:03:57,881 - services.auth_service - WARNING - 로그인 실패 (사용자 없음): JS
+2025-03-29 23:03:57,881 - root - WARNING - 로그인 실패: JS
+2025-03-29 23:04:02,815 - models.user - INFO - 세션 생성: 2c4e1d1e-403a-4826-b56a-3094b984d5c8 (사용자 ID: 2)
+2025-03-29 23:04:02,823 - services.auth_service - INFO - 로그인 성공: js (IP: unknown)
+2025-03-29 23:04:02,826 - root - INFO - 로그인 성공: js
+2025-03-29 23:04:31,552 - models.portfolio - INFO - 종목 추가: ACE 미국 나스닥 100 (367380), 사용자: 2
+2025-03-29 23:04:31,552 - services.portfolio_service - INFO - 종목 매수 (신규): ACE 미국 나스닥 100 (367380), 수량: 319, 사용자: 2
+2025-03-29 23:04:31,625 - services.portfolio_service - INFO - 가격 업데이트 완료: 1개 종목
+2025-03-29 23:05:18,387 - services.portfolio_service - INFO - 가격 업데이트 완료: 1개 종목
+2025-03-29 23:05:47,864 - models.portfolio - INFO - 종목 추가: 제이엠티 (094970), 사용자: 2
+2025-03-29 23:05:47,864 - services.portfolio_service - INFO - 종목 매수 (신규): 제이엠티 (094970), 수량: 1662, 사용자: 2
+2025-03-29 23:05:47,938 - services.portfolio_service - INFO - 가격 업데이트 완료: 2개 종목
+2025-03-29 23:05:51,333 - services.portfolio_service - INFO - 가격 업데이트 완료: 2개 종목
+2025-03-29 23:06:45,441 - models.portfolio - INFO - 거래내역 추가: 매도, 종목 ID: 1, 사용자: 2
+2025-03-29 23:06:45,449 - models.portfolio - INFO - 종목 업데이트 (ID: 1), 사용자: 2
+2025-03-29 23:06:45,534 - services.portfolio_service - INFO - 가격 업데이트 완료: 2개 종목
+2025-03-29 23:06:45,534 - services.portfolio_service - INFO - 종목 매도: ACE 미국 나스닥 100 (367380), 수량: 10, 사용자: 2
+2025-03-29 23:20:40,372 - models.database - INFO - 데이터베이스 초기화 완료
+2025-03-29 23:20:40,372 - services.market_service - INFO - 가격 업데이트 스케줄러 시작됨
+2025-03-29 23:20:40,373 - services.market_service - INFO - 자동 가격 업데이트 작업 시작
+2025-03-29 23:20:40,468 - services.portfolio_service - INFO - 가격 업데이트 완료: 2개 종목
+2025-03-29 23:20:40,469 - models.savings - INFO - 적금 계산 업데이트 완료: 0개 업데이트됨
+2025-03-29 23:20:40,469 - services.market_service - INFO - 자동 가격 업데이트 작업 완료
+2025-03-29 23:20:41,071 - httpx - INFO - HTTP Request: GET http://127.0.0.1:7860/gradio_api/startup-events "HTTP/1.1 200 OK"
+2025-03-29 23:20:41,115 - httpx - INFO - HTTP Request: HEAD http://127.0.0.1:7860/ "HTTP/1.1 200 OK"
+2025-03-29 23:20:41,221 - httpx - INFO - HTTP Request: GET https://api.gradio.app/pkg-version "HTTP/1.1 200 OK"
+2025-03-29 23:20:55,415 - models.user - INFO - 세션 생성: 20daa4fc-0299-496e-b8eb-6400cbf42a8f (사용자 ID: 2)
+2025-03-29 23:20:55,425 - services.auth_service - INFO - 로그인 성공: js (IP: unknown)
+2025-03-29 23:20:55,433 - root - INFO - 로그인 성공: js
+2025-03-29 23:21:00,271 - root - WARNING - 보유 종목 목록 조회 실패: type object 'Dropdown' has no attribute 'update'
+2025-03-29 23:21:13,338 - root - WARNING - 보유 종목 목록 조회 실패: type object 'Dropdown' has no attribute 'update'
+2025-03-29 23:21:26,786 - root - WARNING - 보유 종목 목록 조회 실패: type object 'Dropdown' has no attribute 'update'
+2025-03-29 23:21:28,579 - root - WARNING - 보유 종목 목록 조회 실패: type object 'Dropdown' has no attribute 'update'
+2025-03-29 23:23:31,157 - services.portfolio_service - INFO - 종목 매수 (신규): KODEX 차이나항셍테크 (372330), 수량: 331, 사용자: 2
+2025-03-29 23:23:31,296 - services.portfolio_service - INFO - 가격 업데이트 완료: 3개 종목
+2025-03-29 23:23:50,977 - services.portfolio_service - INFO - 종목 매수 (신규): ACE 미국 나스닥100 (367380), 수량: 44, 사용자: 2
+2025-03-29 23:23:51,159 - services.portfolio_service - INFO - 가격 업데이트 완료: 4개 종목
+2025-03-29 23:24:06,344 - services.portfolio_service - INFO - 종목 매수 (추가): ACE 미국 나스닥100 (367380), 수량: 163, 사용자: 2
+2025-03-29 23:24:06,517 - services.portfolio_service - INFO - 가격 업데이트 완료: 4개 종목
+2025-03-29 23:24:09,965 - services.portfolio_service - INFO - 가격 업데이트 완료: 4개 종목
+2025-03-29 23:24:12,521 - root - WARNING - 보유 종목 목록 조회 실패: type object 'Dropdown' has no attribute 'update'
+2025-03-29 23:33:26,734 - models.database - INFO - 데이터베이스 초기화 완료
+2025-03-29 23:33:26,735 - services.market_service - INFO - 가격 업데이트 스케줄러 시작됨
+2025-03-29 23:33:26,735 - services.market_service - INFO - 자동 가격 업데이트 작업 시작
+2025-03-29 23:33:26,913 - services.portfolio_service - INFO - 가격 업데이트 완료: 4개 종목
+2025-03-29 23:33:26,914 - models.savings - INFO - 적금 계산 업데이트 완료: 0개 업데이트됨
+2025-03-29 23:33:26,914 - services.market_service - INFO - 자동 가격 업데이트 작업 완료
+2025-03-29 23:33:27,634 - httpx - INFO - HTTP Request: GET https://api.gradio.app/pkg-version "HTTP/1.1 200 OK"
+2025-03-29 23:33:52,808 - models.database - INFO - 데이터베이스 초기화 완료
+2025-03-29 23:33:52,808 - services.market_service - INFO - 가격 업데이트 스케줄러 시작됨
+2025-03-29 23:33:52,809 - services.market_service - INFO - 자동 가격 업데이트 작업 시작
+2025-03-29 23:33:52,960 - services.portfolio_service - INFO - 가격 업데이트 완료: 4개 종목
+2025-03-29 23:33:52,962 - models.savings - INFO - 적금 계산 업데이트 완료: 0개 업데이트됨
+2025-03-29 23:33:52,962 - services.market_service - INFO - 자동 가격 업데이트 작업 완료
+2025-03-29 23:33:53,742 - httpx - INFO - HTTP Request: GET https://api.gradio.app/pkg-version "HTTP/1.1 200 OK"
