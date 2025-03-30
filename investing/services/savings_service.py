@@ -1,17 +1,37 @@
 """
-적금 관련 서비스
+적금 관련 서비스 - 고급 적금 계산 및 목표 관리 기능 추가
 """
 import pandas as pd
-from datetime import datetime
-from datetime import datetime, timedelta
+import numpy as np
+from datetime import datetime, timedelta, date
+import re
+import json
+
+from utils.logging import get_logger, log_exception
+try:
+    from utils.helpers import (
+        parse_date, 
+        format_number, 
+        calculate_interest, 
+        calculate_savings_periodic,
+        get_remaining_days
+    )
+except ImportError:
+    from datetime import datetime
+    def parse_date(date_str, default=None): return default
+    def format_number(number, decimal_places=0): return str(number)
+    def calculate_interest(principal, rate, years): return principal * (1 + rate/100*years)
+    def calculate_savings_periodic(monthly_amount, rate, months): 
+        return {"post_tax_result": monthly_amount * months * (1 + rate/100/12*months/2)}
+    def get_remaining_days(target_date): 
+        return (target_date - datetime.now().date()).days if isinstance(target_date, date) else 0
+
+logger = get_logger(__name__)
 
 try:
-    from utils.logging import get_logger
-    logger = get_logger(__name__)
+    from models.database import get_db_connection
 except ImportError:
-    import logging
-    logger = logging.getLogger(__name__)
-    logger.setLevel(logging.INFO)
+    logger.error("models.database 모듈을 불러올 수 없습니다.")
 try:
     from models.savings import (
         get_savings_by_user,
@@ -34,8 +54,6 @@ except ImportError:
     def get_savings_transactions(*args, **kwargs): return []
     def update_savings_calculation(*args, **kwargs): return 0
 
-from utils.logging import get_logger
-
 def get_savings_summary(user_id):
     """
     적금 요약 정보 (시각화용)
@@ -52,44 +70,92 @@ def get_savings_summary(user_id):
     if not savings_list:
         return {"total_amount": 0, "savings": []}
     
-    # 총 금액 계산
-    total_amount = sum(item['현재납입액'] for item in savings_list if item.get('현재납입액'))
-    
-    # 적금 데이터 변환
-    savings_data = []
-    for item in savings_list:
-        # 날짜 형식 변환
-        start_date = item.get('시작일')
-        if isinstance(start_date, str):
-            try:
-                start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
-            except ValueError:
-                start_date = datetime.now().date()
+    try:
+        # 총 금액 계산
+        total_amount = sum(item['현재납입액'] for item in savings_list if item.get('현재납입액'))
         
-        end_date = item.get('만기일')
-        if isinstance(end_date, str):
-            try:
-                end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
-            except ValueError:
-                # 기본값: 1년 후
-                end_date = datetime.now().date() + timedelta(days=365)
+        # 적금 데이터 변환
+        savings_data = []
+        for item in savings_list:
+            # 날짜 형식 변환
+            start_date = item.get('시작일')
+            if isinstance(start_date, str):
+                try:
+                    start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+                except ValueError:
+                    start_date = datetime.now().date()
+            
+            end_date = item.get('만기일')
+            if isinstance(end_date, str):
+                try:
+                    end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+                except ValueError:
+                    # 기본값: 1년 후
+                    end_date = datetime.now().date() + timedelta(days=365)
+            
+            # 남은 날짜 계산
+            days_left = get_remaining_days(end_date)
+            
+            # 목표 달성률 계산
+            target_amount = item.get('목표금액', 0)
+            current_amount = item.get('현재납입액', 0)
+            
+            if target_amount and target_amount > 0:
+                achievement_rate = min(100, (current_amount / target_amount) * 100)
+            else:
+                achievement_rate = 0
+            
+            savings_data.append({
+                "id": item.get('id', 0),
+                "name": item.get('이름', '미정'),
+                "bank": item.get('은행', ''),
+                "start_date": start_date,
+                "end_date": end_date,
+                "days_left": days_left,
+                "monthly_amount": item.get('월납입액', 0),
+                "interest_rate": item.get('금리', 0),
+                "current_amount": item.get('현재납입액', 0),
+                "expected_amount": item.get('예상만기금액', 0),
+                "target_amount": target_amount,
+                "achievement_rate": achievement_rate,
+                "savings_type": item.get('적금유형', '정기적금')
+            })
         
-        savings_data.append({
-            "id": item.get('id', 0),
-            "name": item.get('이름', '미정'),
-            "bank": item.get('은행', ''),
-            "start_date": start_date,
-            "end_date": end_date,
-            "monthly_amount": item.get('월납입액', 0),
-            "interest_rate": item.get('금리', 0),
-            "current_amount": item.get('현재납입액', 0),
-            "expected_amount": item.get('예상만기금액', 0)
-        })
-    
-    return {
-        "total_amount": total_amount,
-        "savings": savings_data
-    }
+        # 적금 타입별 합계
+        savings_by_type = {}
+        for item in savings_list:
+            savings_type = item.get('적금유형', '정기적금')
+            amount = item.get('현재납입액', 0)
+            
+            if savings_type in savings_by_type:
+                savings_by_type[savings_type] += amount
+            else:
+                savings_by_type[savings_type] = amount
+        
+        # 만기일 기준 정렬 (가까운 순)
+        savings_data.sort(key=lambda x: x['days_left'])
+        
+        # 은행별 합계
+        savings_by_bank = {}
+        for item in savings_list:
+            bank = item.get('은행', '기타')
+            amount = item.get('현재납입액', 0)
+            
+            if bank in savings_by_bank:
+                savings_by_bank[bank] += amount
+            else:
+                savings_by_bank[bank] = amount
+        
+        # 데이터 요약
+        return {
+            "total_amount": total_amount,
+            "savings": savings_data,
+            "by_type": savings_by_type,
+            "by_bank": savings_by_bank
+        }
+    except Exception as e:
+        log_exception(logger, e, {"context": "적금 요약 정보 계산"})
+        return {"total_amount": 0, "savings": []}
 
 def load_savings(user_id):
     """
@@ -104,51 +170,96 @@ def load_savings(user_id):
     if user_id is None:
         return pd.DataFrame()  # 로그인하지 않은 경우 빈 데이터프레임 반환
     
-    # 사용자 적금 목록 조회
-    savings = get_savings_by_user(user_id)
-    
-    if not savings:
-        return pd.DataFrame()  # 데이터가 없는 경우 빈 데이터프레임 반환
-    
-    # 데이터프레임 변환
-    df = pd.DataFrame(savings)
-    
-    # UI 표시용 컬럼명 변경 및 선택
     try:
-        # 필요한 컬럼만 선택
-        df = df[[
-            'id', '이름', '은행', '계좌번호', '시작일', '만기일', '월납입액', 
-            '금리', '세후금리', '현재납입액', '예상만기금액', '적금유형', 'last_update'
-        ]]
+        # 사용자 적금 목록 조회
+        savings = get_savings_by_user(user_id)
         
-        # 컬럼명 포맷팅
-        df.columns = [
-            "ID", "적금명", "은행명", "계좌번호", "시작일", "만기일", "월납입액", 
-            "금리(%)", "세후금리(%)", "현재납입액", "예상만기금액", "적금유형", "최종업데이트"
-        ]
+        if not savings:
+            return pd.DataFrame()  # 데이터가 없는 경우 빈 데이터프레임 반환
         
-        # 숫자 포맷팅
-        for col in ["월납입액", "현재납입액", "예상만기금액"]:
-            if col in df.columns:
-                df[col] = df[col].apply(lambda x: f"{x:,.0f}원" if pd.notnull(x) else "")
+        # 데이터프레임 변환
+        df = pd.DataFrame(savings)
         
-        for col in ["금리(%)", "세후금리(%)"]:
-            if col in df.columns:
-                df[col] = df[col].apply(lambda x: f"{x:.2f}%" if pd.notnull(x) else "")
+        # UI 표시용 컬럼명 변경 및 선택
+        try:
+            # 필요한 컬럼만 선택
+            columns_to_display = [
+                'id', '이름', '은행', '계좌번호', '시작일', '만기일', '월납입액', 
+                '금리', '세후금리', '현재납입액', '예상만기금액', '적금유형', 
+                '금리유형', '목표금액', '목표달성률', '자동이체여부', 'last_update'
+            ]
+            
+            # 존재하는 컬럼만 선택
+            available_columns = [col for col in columns_to_display if col in df.columns]
+            df = df[available_columns]
+            
+            # 컬럼명 매핑
+            column_mapping = {
+                'id': "ID", 
+                '이름': "적금명", 
+                '은행': "은행명", 
+                '계좌번호': "계좌번호", 
+                '시작일': "시작일", 
+                '만기일': "만기일", 
+                '월납입액': "월납입액", 
+                '금리': "금리(%)", 
+                '세후금리': "세후금리(%)", 
+                '현재납입액': "현재납입액", 
+                '예상만기금액': "예상만기금액", 
+                '적금유형': "적금유형",
+                '금리유형': "금리유형",
+                '목표금액': "목표금액",
+                '목표달성률': "목표달성률(%)",
+                '자동이체여부': "자동이체",
+                'last_update': "최종업데이트"
+            }
+            
+            # 사용 가능한 키와 값만으로 매핑 적용
+            available_mapping = {k: v for k, v in column_mapping.items() if k in available_columns}
+            df.rename(columns=available_mapping, inplace=True)
+            
+            # 남은 일수 계산 추가
+            try:
+                today = datetime.now().date()
+                df["남은일수"] = pd.to_datetime(df["만기일"]).apply(
+                    lambda x: max(0, (x.date() - today).days)
+                )
+            except:
+                # 예외 발생 시 남은 일수 열 추가하지 않음
+                pass
+            
+            # 숫자 포맷팅
+            for col in ["월납입액", "현재납입액", "예상만기금액", "목표금액"]:
+                if col in df.columns:
+                    df[col] = df[col].apply(lambda x: f"{x:,.0f}원" if pd.notnull(x) else "")
+            
+            for col in ["금리(%)", "세후금리(%)", "목표달성률(%)"]:
+                if col in df.columns:
+                    df[col] = df[col].apply(lambda x: f"{x:.2f}%" if pd.notnull(x) else "")
+            
+            # 날짜 포맷팅
+            for col in ["시작일", "만기일"]:
+                if col in df.columns:
+                    df[col] = pd.to_datetime(df[col]).dt.strftime('%Y-%m-%d')
+            
+            if "최종업데이트" in df.columns:
+                df["최종업데이트"] = pd.to_datetime(df["최종업데이트"]).dt.strftime('%Y-%m-%d %H:%M')
+            
+            # 자동이체 포맷팅
+            if "자동이체" in df.columns:
+                df["자동이체"] = df["자동이체"].apply(lambda x: "예" if x else "아니오")
+        except Exception as e:
+            log_exception(logger, e, {"context": "적금 데이터 변환"})
+            return pd.DataFrame()
         
-        # 날짜 포맷팅
-        for col in ["시작일", "만기일"]:
-            if col in df.columns:
-                df[col] = pd.to_datetime(df[col]).dt.strftime('%Y-%m-%d')
-        
-        df["최종업데이트"] = pd.to_datetime(df["최종업데이트"]).dt.strftime('%Y-%m-%d %H:%M')
+        return df
     except Exception as e:
-        logger.error(f"적금 데이터 변환 오류: {e}")
+        log_exception(logger, e, {"context": "적금 데이터 로드"})
         return pd.DataFrame()
-    
-    return df
 
-def create_savings(user_id, name, bank, account_number, start_date, end_date, monthly_amount, interest_rate, savings_type):
+def create_savings(user_id, name, bank, account_number, start_date, end_date, 
+                  monthly_amount, interest_rate, savings_type, 
+                  interest_type='단리', target_amount=None, auto_transfer=False, memo=None):
     """
     적금 추가
     
@@ -162,244 +273,7 @@ def create_savings(user_id, name, bank, account_number, start_date, end_date, mo
         monthly_amount (float): 월 납입액
         interest_rate (float): 금리 (%)
         savings_type (str): 적금 유형
-        
-    Returns:
-        pandas.DataFrame: 업데이트된 적금 목록
-    """
-    try:
-        # 적금 추가
-        add_savings(
-            user_id, name, bank, account_number, start_date, end_date, 
-            monthly_amount, interest_rate, savings_type
-        )
-        
-        logger.info(f"적금 추가: {name}, 사용자: {user_id}")
-        
-        # 업데이트된 적금 목록 반환
-        return load_savings(user_id)
-    except Exception as e:
-        logger.error(f"적금 추가 오류: {e}")
-        return load_savings(user_id)
-
-def edit_savings(user_id, savings_id, **kwargs):
-    """
-    적금 정보 수정
-    
-    Args:
-        user_id (int): 사용자 ID
-        savings_id (int): 적금 ID
-        **kwargs: 수정할 필드들 (name, bank, account_number 등)
-        
-    Returns:
-        pandas.DataFrame: 업데이트된 적금 목록
-    """
-    try:
-        # 적금 정보 업데이트
-        update_savings(savings_id, user_id, **kwargs)
-        
-        # 적금 계산 업데이트 (월납입액, 금리 등이 변경된 경우)
-        update_savings_calculation(savings_id, user_id)
-        
-        logger.info(f"적금 수정: ID {savings_id}, 사용자: {user_id}")
-        
-        # 업데이트된 적금 목록 반환
-        return load_savings(user_id)
-    except Exception as e:
-        logger.error(f"적금 수정 오류: {e}")
-        return load_savings(user_id)
-
-def remove_savings(user_id, savings_id):
-    """
-    적금 삭제
-    
-    Args:
-        user_id (int): 사용자 ID
-        savings_id (int): 적금 ID
-        
-    Returns:
-        tuple: (결과 메시지, 업데이트된 적금 목록)
-    """
-    try:
-        # 적금 존재 확인
-        savings = get_savings_by_id(savings_id, user_id)
-        
-        if not savings:
-            return "적금을 찾을 수 없습니다.", load_savings(user_id)
-        
-        # 적금 삭제
-        delete_savings(savings_id, user_id)
-        
-        logger.info(f"적금 삭제: ID {savings_id}, 사용자: {user_id}")
-        return "적금이 삭제되었습니다.", load_savings(user_id)
-    except Exception as e:
-        logger.error(f"적금 삭제 오류: {e}")
-        return f"적금 삭제 중 오류가 발생했습니다: {e}", load_savings(user_id)
-
-def add_savings_deposit(user_id, savings_id, date, amount, memo=None):
-    """
-    적금 입금 기록 추가
-    
-    Args:
-        user_id (int): 사용자 ID
-        savings_id (int): 적금 ID
-        date (str): 입금일자 (YYYY-MM-DD)
-        amount (float): 입금액
-        memo (str, optional): 메모
-        
-    Returns:
-        pandas.DataFrame: 업데이트된 적금 거래내역
-    """
-    try:
-        # 적금 존재 확인
-        savings = get_savings_by_id(savings_id, user_id)
-        
-        if not savings:
-            logger.warning(f"적금 입금 실패 (적금 없음): ID {savings_id}, 사용자: {user_id}")
-            return pd.DataFrame()
-        
-        # 적금 거래내역 추가
-        add_savings_transaction(savings_id, user_id, date, amount, '입금', memo)
-        
-        # 적금 계산 업데이트
-        update_savings_calculation(savings_id, user_id)
-        
-        logger.info(f"적금 입금 기록 추가: ID {savings_id}, 금액: {amount}, 사용자: {user_id}")
-        
-        # 업데이트된 거래내역 반환
-        return load_savings_transactions(user_id, savings_id)
-    except Exception as e:
-        logger.error(f"적금 입금 기록 추가 오류: {e}")
-        return pd.DataFrame()
-
-def add_savings_withdrawal(user_id, savings_id, date, amount, memo=None):
-    """
-    적금 출금 기록 추가
-    
-    Args:
-        user_id (int): 사용자 ID
-        savings_id (int): 적금 ID
-        date (str): 출금일자 (YYYY-MM-DD)
-        amount (float): 출금액
-        memo (str, optional): 메모
-        
-    Returns:
-        pandas.DataFrame: 업데이트된 적금 거래내역
-    """
-    try:
-        # 적금 존재 확인
-        savings = get_savings_by_id(savings_id, user_id)
-        
-        if not savings:
-            logger.warning(f"적금 출금 실패 (적금 없음): ID {savings_id}, 사용자: {user_id}")
-            return pd.DataFrame()
-        
-        # 출금 가능 금액 확인
-        if amount > savings['현재납입액']:
-            logger.warning(f"적금 출금 실패 (잔액 부족): ID {savings_id}, 사용자: {user_id}")
-            return pd.DataFrame()
-        
-        # 적금 거래내역 추가
-        add_savings_transaction(savings_id, user_id, date, amount, '출금', memo)
-        
-        # 적금 계산 업데이트
-        update_savings_calculation(savings_id, user_id)
-        
-        logger.info(f"적금 출금 기록 추가: ID {savings_id}, 금액: {amount}, 사용자: {user_id}")
-        
-        # 업데이트된 거래내역 반환
-        return load_savings_transactions(user_id, savings_id)
-    except Exception as e:
-        logger.error(f"적금 출금 기록 추가 오류: {e}")
-        return pd.DataFrame()
-
-def load_savings_transactions(user_id, savings_id=None, limit=100):
-    """
-    적금 거래내역 로드
-    
-    Args:
-        user_id (int): 사용자 ID
-        savings_id (int, optional): 특정 적금 ID
-        limit (int, optional): 최대 조회 개수
-        
-    Returns:
-        pandas.DataFrame: 적금 거래내역
-    """
-    # 거래내역 조회
-    transactions = get_savings_transactions(user_id, savings_id, limit)
-    
-    if not transactions:
-        return pd.DataFrame()
-    
-    # 데이터프레임 변환
-    df = pd.DataFrame(transactions)
-    
-    # 컬럼명 변경
-    df.columns = ["ID", "적금명", "날짜", "금액", "거래유형", "메모"]
-    
-    # 숫자 포맷팅
-    df["금액"] = df["금액"].apply(lambda x: f"{x:,.0f}원" if pd.notnull(x) else "")
-    
-    # 날짜 포맷팅
-    df["날짜"] = pd.to_datetime(df["날짜"]).dt.strftime('%Y-%m-%d')
-    
-    # 메모가 없는 경우 처리
-    df["메모"] = df["메모"].fillna("-")
-    
-    return df
-
-def update_all_savings():
-    """
-    모든 적금 계산 업데이트
-    
-    Returns:
-        int: 업데이트된 적금 수
-    """
-    return update_savings_calculation()
-
-def get_savings_summary(user_id):
-    """
-    적금 요약 정보 (시각화용)
-    
-    Args:
-        user_id (int): 사용자 ID
-        
-    Returns:
-        dict: 적금 요약 정보
-    """
-    # 사용자 적금 목록
-    savings_list = get_savings_by_user(user_id)
-    
-    if not savings_list:
-        return {"total_amount": 0, "savings": []}
-    
-    # 총 금액 계산
-    total_amount = sum(item['현재납입액'] for item in savings_list if item['현재납입액'])
-    
-    # 적금 데이터 변환
-    savings_data = []
-    for item in savings_list:
-        # 날짜 형식 변환
-        start_date = item['시작일']
-        if isinstance(start_date, str):
-            start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
-        
-        end_date = item['만기일']
-        if isinstance(end_date, str):
-            end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
-        
-        savings_data.append({
-            "id": item['id'],
-            "name": item['이름'],
-            "bank": item['은행'],
-            "start_date": start_date,
-            "end_date": end_date,
-            "monthly_amount": item['월납입액'],
-            "interest_rate": item['금리'],
-            "current_amount": item['현재납입액'],
-            "expected_amount": item['예상만기금액']
-        })
-    
-    return {
-        "total_amount": total_amount,
-        "savings": savings_data
-    }
+        interest_type (str, optional): 금리 유형 ('단리', '복리')
+        target_amount (float, optional): 목표 금액
+        auto_transfer (bool, optional): 자동이체 여부
+        memo
